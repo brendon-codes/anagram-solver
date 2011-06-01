@@ -10,6 +10,7 @@ import os
 import sys
 import re
 import random
+from multiprocessing import Pool
 
 
 def main():
@@ -20,9 +21,22 @@ def main():
     """
     data, orig_data = get_input_data()
     wordlist, lenmap = get_wordlist()
-    out = cycle_all(data, wordlist, lenmap)
+    out = solver(data, wordlist, lenmap)
     show_results(out, orig_data)
     return 0
+
+
+def solver(data, wordlist, lenmap):
+    """
+    Solver worker
+    """
+    workers = 64
+    pool = Pool(processes=workers)
+    results = [pool.apply_async(cycle_all, [data, wordlist, lenmap])
+               for i in xrange(workers)]
+    resvals = [r.get() for r in results]
+    bestchoice = reduce(lambda a, b: a if len(a) > len(b) else b, resvals)
+    return bestchoice
 
 
 def show_results(out, orig_data):
@@ -65,6 +79,7 @@ def cycle_all(data, wordlist, lenmap):
     """
     Cycle
     """
+    #print("Cycle")
     found_words = []
     bucket = ''
     word = data
