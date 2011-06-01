@@ -9,6 +9,7 @@ Author: Brendon Crawford <brendon@last.vc>
 import os
 import sys
 import re
+import random
 
 
 def main():
@@ -28,8 +29,8 @@ def show_results(out, orig_data):
     """
     Shows Results
     """
-    print("Subject:\n%s\n" % orig_data)
-    print("Anagram:\n%s\n" % out)
+    print("Subject:\n%s" % orig_data)
+    print("Anagram:\n%s" % out)
     return True
 
 
@@ -108,7 +109,7 @@ def extract_word(data):
     Extract word
     """
     out = ''
-    idx = random.randint(0, len(data))
+    idx = random.randint(0, len(data) - 1)
     for i in xrange(len(data)):
         if i != idx:
             out += data[i]
