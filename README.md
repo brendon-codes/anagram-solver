@@ -1,7 +1,7 @@
 LAST Anagram Solver
 ===================
 
-Author: Brendon Crawford <brendon at last vc>
+Author: Brendon Crawford
 
 Homepage: http://github.com/last/anagram/
 
