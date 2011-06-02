@@ -10,7 +10,8 @@ import os
 import sys
 import re
 import random
-from multiprocessing import Pool
+import multiprocessing as mp
+from optparse import OptionParser
 
 
 def main():
@@ -19,32 +20,63 @@ def main():
 
     Returns: Int
     """
+    options, _ = get_options()
     data, orig_data = get_input_data()
-    wordlist, lenmap = get_wordlist()
-    out = solver(data, wordlist, lenmap)
-    show_results(out, orig_data)
-    return 0
+    if len(data) == 0:
+        print("Invalid input data")
+        return False
+    else:
+        wordlist, lenmap = get_wordlist()
+        out = solver(options.workers, options.jobs, data, wordlist, lenmap)
+        show_results(out, orig_data)
+        return True
 
 
-def solver(data, wordlist, lenmap):
+def get_options():
+    """
+    Get options
+    """
+    usage = 'Usage: echo "input phrase" | %prog [options]'
+    parser = OptionParser(usage=usage)
+    parser.add_option('-w', '--workers', type='int', dest='workers',
+                      default=2, help="Workers per CPU")
+    parser.add_option('-j', '--jobs', type='int', dest='jobs',
+                      default=2, help="Jobs per worker")
+    options, args = parser.parse_args()
+    return (options, args)
+
+
+def solver(workers, jobs, data, wordlist, lenmap):
     """
     Solver worker
     """
-    workers = 64
-    pool = Pool(processes=workers)
+    p_count = workers * mp.cpu_count()
+    j_count = p_count * jobs
+    pool = mp.Pool(processes=p_count)
     results = [pool.apply_async(cycle_all, [data, wordlist, lenmap])
-               for i in xrange(workers)]
+               for i in xrange(j_count)]
     resvals = [r.get() for r in results]
     bestchoice = reduce(lambda a, b: a if len(a) > len(b) else b, resvals)
     return bestchoice
+
+
+def get_score(out, orig_data):
+    """
+    Gets score string
+    """
+    score = "%0.2f%%" % ((float(len(out)) / float(len(orig_data))) * 100)
+    return score
 
 
 def show_results(out, orig_data):
     """
     Shows Results
     """
-    print("Subject:\n%s" % orig_data)
-    print("Anagram:\n%s" % out)
+    print
+    print("Subject:\n%s\n" % orig_data)
+    print("Anagram:\n%s\n" % out)
+    print("Score:\n%s" % get_score(out, orig_data))
+    print
     return True
 
 
@@ -52,8 +84,8 @@ def get_input_data():
     """
     Get input data
     """
-    orig_data = sys.stdin.read()
-    data = re.sub(r'\s+', '', orig_data)
+    orig_data = sys.stdin.read().strip()
+    data = re.sub(r'[^a-zA-Z]', '', orig_data)
     return (data, orig_data)
 
 
@@ -79,7 +111,6 @@ def cycle_all(data, wordlist, lenmap):
     """
     Cycle
     """
-    #print("Cycle")
     found_words = []
     bucket = ''
     word = data
@@ -132,4 +163,4 @@ def extract_word(data):
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(0 if main() else 1)
