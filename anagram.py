@@ -21,16 +21,45 @@ def main():
     Returns: bool
     """
     options, _ = get_options()
-    data, orig_data = get_input_data()
+    orig_data = get_input_data()
+    out, score = runner(orig_data, options.workers, options.jobs)
+    show_results(out, orig_data, score)
+    return True
+
+
+def runner(orig_data, workers=2, jobs=2):
+    """
+    Runs solvers. Useful for testing. main() wraps around this
+
+    Arguments:
+        orig_data -- string
+        workers -- int
+        jobs -- int
+
+    Returns: tuple(string, float)
+    """
+    data = get_clean_data(orig_data)
     if len(data) == 0:
-        print("Invalid input data")
-        return False
+        out = ''
+        score = 0.0
     else:
         wordlist, lenmap = get_wordlist()
-        out = solver(options.workers, options.jobs, data, wordlist, lenmap)
+        out = solver(workers, jobs, data, wordlist, lenmap)
         score = get_score(out, data)
-        show_results(out, orig_data, score)
-        return True
+    return (out, score)
+
+
+def get_clean_data(orig_data):
+    """
+    Gets cleaned input data
+
+    Arguments:
+        orig_data -- string
+
+    Returns: string
+    """
+    data = re.sub(r'[^a-zA-Z]', '', orig_data)
+    return data
 
 
 def get_options():
@@ -110,11 +139,10 @@ def get_input_data():
     """
     Get input data from stdin
 
-    Returns: tuple(string, string)
+    Returns: string
     """
     orig_data = sys.stdin.read().strip()
-    data = re.sub(r'[^a-zA-Z]', '', orig_data)
-    return (data, orig_data)
+    return orig_data
 
 
 def get_wordlist():
