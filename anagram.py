@@ -28,7 +28,8 @@ def main():
     else:
         wordlist, lenmap = get_wordlist()
         out = solver(options.workers, options.jobs, data, wordlist, lenmap)
-        show_results(out, orig_data)
+        score = get_score(out, data)
+        show_results(out, orig_data, score)
         return True
 
 
@@ -60,22 +61,23 @@ def solver(workers, jobs, data, wordlist, lenmap):
     return bestchoice
 
 
-def get_score(out, orig_data):
+def get_score(out, data):
     """
-    Gets score string
+    Gets score percentage
     """
-    score = "%0.2f%%" % ((float(len(out)) / float(len(orig_data))) * 100)
+    out_clean = re.sub(r'\s+', '', out)
+    score = ((float(len(out_clean)) / float(len(data))) * 100)
     return score
 
 
-def show_results(out, orig_data):
+def show_results(out, orig_data, score):
     """
     Shows Results
     """
     print
     print("Subject:\n%s\n" % orig_data)
     print("Anagram:\n%s\n" % out)
-    print("Score:\n%s" % get_score(out, orig_data))
+    print("Score:\n%0.2f%%" % score)
     print
     return True
 
