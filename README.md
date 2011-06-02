@@ -2,6 +2,7 @@ LAST Anagram Solver
 ===================
 
 Author: Brendon Crawford <brendon at last vc>
+
 Homepage: http://github.com/last/anagram/
 
 This is a distributed/multi-core anagram solver.
@@ -9,6 +10,7 @@ This is a distributed/multi-core anagram solver.
 Basic Usage:
 
     echo "hello world" | ./solve.py
+
 
     ./solve.py < some-input.txt
 
