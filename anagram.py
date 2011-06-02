@@ -16,9 +16,9 @@ from optparse import OptionParser
 
 def main():
     """
-    Main Routine from Command Line
+    Main routine from command line
 
-    Returns: Int
+    Returns: bool
     """
     options, _ = get_options()
     data, orig_data = get_input_data()
@@ -35,7 +35,9 @@ def main():
 
 def get_options():
     """
-    Get options
+    Get command line options
+
+    Returns: tuple(object, list)
     """
     usage = 'Usage: echo "input phrase" | %prog [options]'
     parser = OptionParser(usage=usage)
@@ -49,7 +51,16 @@ def get_options():
 
 def solver(workers, jobs, data, wordlist, lenmap):
     """
-    Solver worker
+    Starts job workers
+
+    Arguments:
+        workers -- int
+        jobs -- int
+        data -- string
+        wordlist -- frozenset
+        lenmap -- dict
+
+    Returns: string
     """
     p_count = workers * mp.cpu_count()
     j_count = p_count * jobs
@@ -63,7 +74,13 @@ def solver(workers, jobs, data, wordlist, lenmap):
 
 def get_score(out, data):
     """
-    Gets score percentage
+    Gets score percentage value
+
+    Arguments:
+        out -- string
+        data -- string
+
+    Returns: float
     """
     out_clean = re.sub(r'\s+', '', out)
     score = ((float(len(out_clean)) / float(len(data))) * 100)
@@ -72,7 +89,14 @@ def get_score(out, data):
 
 def show_results(out, orig_data, score):
     """
-    Shows Results
+    Prints results to console
+
+    Arguments:
+        out -- string
+        orig_data -- string
+        score -- float
+
+    Returns: bool
     """
     print
     print("Subject:\n%s\n" % orig_data)
@@ -84,7 +108,9 @@ def show_results(out, orig_data, score):
 
 def get_input_data():
     """
-    Get input data
+    Get input data from stdin
+
+    Returns: tuple(string, string)
     """
     orig_data = sys.stdin.read().strip()
     data = re.sub(r'[^a-zA-Z]', '', orig_data)
@@ -93,7 +119,9 @@ def get_input_data():
 
 def get_wordlist():
     """
-    Gets wordlist
+    Gets wordlist and builds wordlist mappers
+
+    Returns: tuple(frozenset, dict)
     """
     dname = os.path.dirname(__file__)
     fname = os.path.realpath(dname + '/data/wordlist.txt')
@@ -111,7 +139,14 @@ def get_wordlist():
 
 def cycle_all(data, wordlist, lenmap):
     """
-    Cycle
+    Cycles through data
+
+    Arguments:
+        data -- string
+        wordlist -- frozenset
+        lenmap -- dict
+
+    Returns: string
     """
     found_words = []
     bucket = ''
@@ -132,6 +167,11 @@ def cycle_all(data, wordlist, lenmap):
 def build_output(found_words):
     """
     Builds output string
+
+    Arguments:
+        found_words -- list
+
+    Returns: string
     """
     random.shuffle(found_words)
     out = ' '.join(found_words)
@@ -141,6 +181,13 @@ def build_output(found_words):
 def find_match(word, wordlist, lenmap):
     """
     Find a match of word against wordlist
+
+    Arguments:
+        word -- string
+        wordlist -- frozenset
+        lenmap -- dict
+
+    Returns: string|None
     """
     wordlen = len(word)
     sword = sorted(word)
@@ -154,7 +201,12 @@ def find_match(word, wordlist, lenmap):
 
 def extract_word(data):
     """
-    Extract word
+    Extract word from string
+
+    Arguments:
+        data -- string
+
+    Returns: tuple(string, string)
     """
     out = ''
     idx = random.randint(0, len(data) - 1)
@@ -165,4 +217,7 @@ def extract_word(data):
 
 
 if __name__ == '__main__':
+    """
+    Run from command line
+    """
     sys.exit(0 if main() else 1)
