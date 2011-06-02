@@ -20,10 +20,10 @@ def main():
 
     Returns: bool
     """
-    options, _ = get_options()
-    orig_data = get_input_data()
+    options, _ = _get_options()
+    orig_data = _get_input_data()
     out, score = runner(orig_data, options.workers, options.jobs)
-    show_results(out, orig_data, score)
+    _show_results(out, orig_data, score)
     return True
 
 
@@ -38,18 +38,18 @@ def runner(orig_data, workers=2, jobs=2):
 
     Returns: tuple(string, float)
     """
-    data = get_clean_data(orig_data)
+    data = _get_clean_data(orig_data)
     if len(data) == 0:
         out = ''
         score = 0.0
     else:
-        wordlist, lenmap = get_wordlist()
-        out = solver(workers, jobs, data, wordlist, lenmap)
-        score = get_score(out, data)
+        wordlist, lenmap = _get_wordlist()
+        out = _solver(workers, jobs, data, wordlist, lenmap)
+        score = _get_score(out, data)
     return (out, score)
 
 
-def get_clean_data(orig_data):
+def _get_clean_data(orig_data):
     """
     Gets cleaned input data
 
@@ -62,7 +62,7 @@ def get_clean_data(orig_data):
     return data
 
 
-def get_options():
+def _get_options():
     """
     Get command line options
 
@@ -78,7 +78,7 @@ def get_options():
     return (options, args)
 
 
-def solver(workers, jobs, data, wordlist, lenmap):
+def _solver(workers, jobs, data, wordlist, lenmap):
     """
     Starts job workers
 
@@ -94,14 +94,14 @@ def solver(workers, jobs, data, wordlist, lenmap):
     p_count = workers * mp.cpu_count()
     j_count = p_count * jobs
     pool = mp.Pool(processes=p_count)
-    results = [pool.apply_async(cycle_all, [data, wordlist, lenmap])
+    results = [pool.apply_async(_cycle_all, [data, wordlist, lenmap])
                for i in xrange(j_count)]
     resvals = [r.get() for r in results]
     bestchoice = reduce(lambda a, b: a if len(a) > len(b) else b, resvals)
     return bestchoice
 
 
-def get_score(out, data):
+def _get_score(out, data):
     """
     Gets score percentage value
 
@@ -116,7 +116,7 @@ def get_score(out, data):
     return score
 
 
-def show_results(out, orig_data, score):
+def _show_results(out, orig_data, score):
     """
     Prints results to console
 
@@ -135,7 +135,7 @@ def show_results(out, orig_data, score):
     return True
 
 
-def get_input_data():
+def _get_input_data():
     """
     Get input data from stdin
 
@@ -145,7 +145,7 @@ def get_input_data():
     return orig_data
 
 
-def get_wordlist():
+def _get_wordlist():
     """
     Gets wordlist and builds wordlist mappers
 
@@ -165,7 +165,7 @@ def get_wordlist():
     return (wordlist, lenmap)
 
 
-def cycle_all(data, wordlist, lenmap):
+def _cycle_all(data, wordlist, lenmap):
     """
     Cycles through data
 
@@ -180,19 +180,19 @@ def cycle_all(data, wordlist, lenmap):
     bucket = ''
     word = data
     while len(word) > 0:
-        found_word = find_match(word, wordlist, lenmap)
+        found_word = _find_match(word, wordlist, lenmap)
         if found_word is None:
-            word, extra = extract_word(word)
+            word, extra = _extract_word(word)
             bucket += extra
         else:
             found_words.append(found_word)
             word = bucket
             bucket = ''
-    out = build_output(found_words)
+    out = _build_output(found_words)
     return out
 
 
-def build_output(found_words):
+def _build_output(found_words):
     """
     Builds output string
 
@@ -206,7 +206,7 @@ def build_output(found_words):
     return out
 
 
-def find_match(word, wordlist, lenmap):
+def _find_match(word, wordlist, lenmap):
     """
     Find a match of word against wordlist
 
@@ -227,7 +227,7 @@ def find_match(word, wordlist, lenmap):
     return None
 
 
-def extract_word(data):
+def _extract_word(data):
     """
     Extract word from string
 
