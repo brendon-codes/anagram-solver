@@ -43,8 +43,8 @@ def runner(orig_data, workers=2, jobs=2):
         out = ''
         score = 0.0
     else:
-        wordlist, lenmap = _get_wordlist()
-        out = _solver(workers, jobs, data, wordlist, lenmap)
+        lenmap = _get_wordlist()
+        out = _solver(workers, jobs, data, lenmap)
         score = _get_score(out, data)
     return (out, score)
 
@@ -78,7 +78,7 @@ def _get_options():
     return (options, args)
 
 
-def _solver(workers, jobs, data, wordlist, lenmap):
+def _solver(workers, jobs, data, lenmap):
     """
     Starts job workers
 
@@ -86,7 +86,6 @@ def _solver(workers, jobs, data, wordlist, lenmap):
         workers -- int
         jobs -- int
         data -- string
-        wordlist -- frozenset
         lenmap -- dict
 
     Returns: string
@@ -94,7 +93,7 @@ def _solver(workers, jobs, data, wordlist, lenmap):
     p_count = workers * mp.cpu_count()
     j_count = p_count * jobs
     pool = mp.Pool(processes=p_count)
-    results = [pool.apply_async(_cycle_all, [data, wordlist, lenmap])
+    results = [pool.apply_async(_cycle_all, [data, lenmap])
                for i in xrange(j_count)]
     resvals = [r.get() for r in results]
     bestchoice = reduce(lambda a, b: a if len(a) > len(b) else b, resvals)
@@ -149,29 +148,29 @@ def _get_wordlist():
     """
     Gets wordlist and builds wordlist mappers
 
-    Returns: tuple(frozenset, dict)
+    Returns: dict
     """
     dname = os.path.dirname(__file__)
     fname = os.path.realpath(dname + '/data/wordlist.txt')
     fh = open(fname, 'r')
-    wordlist = frozenset([x.rstrip() for x in fh])
-    fh.close()
     lenmap = {}
-    for word in wordlist:
-        wordlen = len(word)
+    for x in fh:
+        word = x.rstrip()
+        sword = ''.join(sorted(word))
+        wordlen = len(sword)
         if wordlen not in lenmap:
-            lenmap[wordlen] = []
-        lenmap[wordlen].append(word)
-    return (wordlist, lenmap)
+            lenmap[wordlen] = {}
+        lenmap[wordlen][sword] = word
+    fh.close()
+    return lenmap
 
 
-def _cycle_all(data, wordlist, lenmap):
+def _cycle_all(data, lenmap):
     """
     Cycles through data
 
     Arguments:
         data -- string
-        wordlist -- frozenset
         lenmap -- dict
 
     Returns: string
@@ -180,7 +179,7 @@ def _cycle_all(data, wordlist, lenmap):
     bucket = ''
     word = data
     while len(word) > 0:
-        found_word = _find_match(word, wordlist, lenmap)
+        found_word = _find_match(word, lenmap)
         if found_word is None:
             word, extra = _extract_word(word)
             bucket += extra
@@ -206,24 +205,21 @@ def _build_output(found_words):
     return out
 
 
-def _find_match(word, wordlist, lenmap):
+def _find_match(word, lenmap):
     """
     Find a match of word against wordlist
 
     Arguments:
         word -- string
-        wordlist -- frozenset
         lenmap -- dict
 
     Returns: string|None
     """
     wordlen = len(word)
-    sword = sorted(word)
     if wordlen in lenmap:
-        for target_word in lenmap[wordlen]:
-            ismatch = (sword == sorted(target_word))
-            if ismatch:
-                return target_word
+        sword = ''.join(sorted(word))
+        if sword in lenmap[wordlen]:
+            return lenmap[wordlen][sword]
     return None
 
 
