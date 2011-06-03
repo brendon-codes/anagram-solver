@@ -160,7 +160,6 @@ def _get_wordlist():
         wordlen = len(sword)
         if wordlen not in lenmap:
             lenmap[wordlen] = {}
-        lenmap[wordlen][word] = sword
     fh.close()
     return lenmap
 
